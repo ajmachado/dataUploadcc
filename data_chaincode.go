@@ -14,7 +14,7 @@ import (
 )
 
 // ProductChainCode example simple Chaincode implementation
-type ProductChainCode struct {
+type DataChainCode struct {
 }
 
 // Product - product that is written to the ledger,  Data contains non static type files
