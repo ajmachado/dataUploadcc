@@ -293,7 +293,7 @@ func getProductFromJSON(incoming []byte) (Product, error) {
 func getProductKey(product Product) string {
 
 	// create the key from the 4 attributes
-	key := strings.ToLower(product.Gtin) + strings.ToLower(product.SerialNumber) + strings.ToLower(product.LotNumber) + product.ExpiryDate
+	key := strings.ToLower(product.Gtin) + strings.ToLower(product.SerialNumber) + strings.ToLower(product.Lot) + product.ExpiryDate
 	return key
 
 } // end of getProductKey
