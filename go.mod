@@ -21,5 +21,5 @@ require (
 	golang.org/x/net v0.0.0-20191116160921-f9c825593386 // indirect
 	google.golang.org/grpc v1.25.1 // indirect
 	gopkg.in/yaml.v2 v2.2.5 // indirect
-	github.com/hyperledger/fabric/core/chaincode/shim v1.4.4
 )
+replace gotest.tools => github.com/gotestyourself/gotest.tools v2.1.0+incompatible
