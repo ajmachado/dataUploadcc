@@ -1,19 +1,15 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
-	"strconv"
 	"strings"
-	"time"
-
+	
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
 )
 
-// ProductChainCode example simple Chaincode implementation
+// DataChainCode example simple Chaincode implementation
 type DataChainCode struct {
 }
 
@@ -61,7 +57,7 @@ const MaxProductItems = 100
 // Init is called with the chaincode is instantiated or updated.
 // It can be used to initialize data for the chaincode for real products or test
 // For this we don't need to pre-populate anything
-func (t *ProductChainCode) Init(stub shim.ChaincodeStubInterface) pb.Response {
+func (t *DataChainCode) Init(stub shim.ChaincodeStubInterface) pb.Response {
 	logger.Info("Init: enter")
 	defer logger.Info("Init: exit")
 	return shim.Success(nil)
@@ -69,7 +65,7 @@ func (t *ProductChainCode) Init(stub shim.ChaincodeStubInterface) pb.Response {
 } // end of init
 
 // Invoke is called per transaction on the chaincode.
-func (t *ProductChainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
+func (t *DataChainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	logger.Info("Invoke: enter")
 	defer logger.Info("Invoke: exit")
 
@@ -94,7 +90,7 @@ func (t *ProductChainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response 
 // Create Product - passes 2 arguments first is the key the second is JSON data mapping to the defined structure above
 // ============================================================================================================================
 // takes a single argument that is JSON of the product to create
-func (t *ProductChainCode) createProduct(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func (t *DataChainCode) createProduct(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	logger.Info("createProduct: enter")
 	defer logger.Info("createProduct: exit")
 
