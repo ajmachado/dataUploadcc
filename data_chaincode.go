@@ -2,8 +2,6 @@
  SPDX-License-Identifier: Apache-2.0
 */
 
-
-
 package main
 
 import (
@@ -11,7 +9,7 @@ import (
 	"fmt"
 	"strings"
 	
-	"github.com/hyperledger/fabric-chaincode-go/shim"
+	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric-protos-go/peer"
 )
 
