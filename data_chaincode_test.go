@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"os"
 	"testing"
 	"fmt"
@@ -26,7 +25,7 @@ func TestMain(m *testing.M) {
 
 	//logger.Debug("TestMain: enter")
 	//defer logger.Debug("TestMain: exit")
-	fmt.println("TestMain");
+	fmt.Println("TestMain");
 
 	exitCode := m.Run()
 
@@ -35,7 +34,7 @@ func TestMain(m *testing.M) {
 } // end of TestMain
 
 func TestCreateProducts(t *testing.T) {
-	fmt.println("TestCreateProducts: enter")
+	fmt.Println("TestCreateProducts: enter")
 	
 	stub := shim.NewMockStub("mockStub", new(DataChainCode))
 
@@ -50,7 +49,7 @@ func TestCreateProducts(t *testing.T) {
 } // end of TestCreateProducts
 
 func TestCRUD(t *testing.T) {
-	fmt.println("TestCRUD: enter")
+	fmt.Println("TestCRUD: enter")
 	//defer logger.Debug("TestCRUD: exit")
 
 	stub := shim.NewMockStub("mockStub", new(DataChainCode))
