@@ -65,8 +65,8 @@ func (t *DataChainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	fmt.Println("invoke is running " + function)
 
 	// Handle different functions
-	if function == "createMarble" { //create a new marble
-		return t.initMarble(stub, args)
+	if function == "createProduct" { //create a new marble
+		return t.createProduct(stub, args)
 	} 
 
 	fmt.Println("invoke did not find func: " + function) //error
