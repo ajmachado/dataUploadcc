@@ -1,22 +1,19 @@
-/*
- SPDX-License-Identifier: Apache-2.0
-*/
-
 package main
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
 	"strings"
 	
 	"github.com/hyperledger/fabric/core/chaincode/shim"
-	pb "github.com/hyperledger/fabric-protos-go/peer"
+	pb "github.com/hyperledger/fabric/protos/peer"
 )
 
-// SimpleChaincode example simple Chaincode implementation
+// DataChainCode example simple Chaincode implementation
 type DataChainCode struct {
 }
 
+// Product - product that is written to the ledger,  Data contains non static type files
 type Product struct {
 	ID           int                    `json:"id"`
 	Gtin         string                 `json:"gtin"`
@@ -37,73 +34,134 @@ type Product struct {
 	Data         map[string]interface{} `json:"-"` // Unknown fields should go here.
 }
 
-// ===================================================================================
-// Main
-// ===================================================================================
-func main() {
-	err := shim.Start(new(DataChainCode))
-	if err != nil {
-		fmt.Printf("Error starting Simple chaincode: %s", err)
-	}
+// ProductKey - this struct represents the product key
+type ProductKey struct {
+	Key          string
+	Gtin         string
+	SerialNumber string
+	LotNumber    string
+	ExpiryDate   string
 }
 
-// Init initializes chaincode
-// ===========================
+var logger = shim.NewLogger("merck-digitaltwinpoc-cc")
+
+// ProductObjectType - defines the project object type
+const ProductObjectType = "product"
+
+// MaxProductJSONSizeAllowed - defines the max JSON size allowed for an input
+const MaxProductJSONSizeAllowed = 2048
+
+// MaxProductItems - defines the max product items that can be returned
+const MaxProductItems = 100
+
+// Init is called with the chaincode is instantiated or updated.
+// It can be used to initialize data for the chaincode for real products or test
+// For this we don't need to pre-populate anything
 func (t *DataChainCode) Init(stub shim.ChaincodeStubInterface) pb.Response {
+	logger.Info("Init: enter")
+	defer logger.Info("Init: exit")
 	return shim.Success(nil)
-}
 
-// Invoke - Our entry point for Invocations
-// ========================================
+} // end of init
+
+// Invoke is called per transaction on the chaincode.
 func (t *DataChainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
-	function, args := stub.GetFunctionAndParameters()
-	fmt.Println("invoke is running " + function)
+	logger.Info("Invoke: enter")
+	defer logger.Info("Invoke: exit")
 
-	// Handle different functions
-	if function == "createProduct" { //create a new marble
+	function, args := stub.GetFunctionAndParameters()
+	txID := stub.GetTxID()
+
+	logger.Debug("Invoke: Transaction ID: ", txID)
+	logger.Debug("Invoke: function: ", function)
+	logger.Debug("Invoke: args count: ", len(args))
+	logger.Debug("Invoke: args found: ", args)
+
+	if function == "createProduct" {
 		return t.createProduct(stub, args)
 	} 
 
-	fmt.Println("invoke did not find func: " + function) //error
-	return shim.Error("Received unknown function invocation")
-}
+	logger.Error("Invoke: Invalid function = " + function)
+	return shim.Error("Invoke: Invalid function = " + function)
 
+} // end of invoke
+
+// ============================================================================================================================
+// Create Product - passes 2 arguments first is the key the second is JSON data mapping to the defined structure above
+// ============================================================================================================================
+// takes a single argument that is JSON of the product to create
 func (t *DataChainCode) createProduct(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	fmt.Println("createProduct: enter")
-	
+	logger.Info("createProduct: enter")
+	defer logger.Info("createProduct: exit")
+
 	if len(args) != 1 {
 		errorString := "createProduct: Invalid number of args, must be exactly 1 argument containing JSON containing data"
-		fmt.Println(errorString)
+		logger.Error(errorString)
 		return shim.Error(errorString)
 	}
 
 	var productInput = args[0]
 	product, err := getProductFromJSON([]byte(productInput))
 	if err != nil {
-		fmt.Println("createProduct: Error with JSON format:", err)
+		logger.Error("createProduct: Error with JSON format:", err)
 		return shim.Error(err.Error())
 	}
 
 	key := getProductKey(product)
-	//fmt.Println("createProduct: key = ", key)
+	logger.Debug("createProduct: key = ", key)
 	bytes, err := product.toBytes()
 	if err != nil {
-		fmt.Println("createProduct: Error converting input product to bytes:", err)
+		logger.Error("createProduct: Error converting input product to bytes:", err)
 		return shim.Error(err.Error())
 	}
 
 	// write it to the ledger
-	//logger.Debug("createProduct: call putState, key = ", key)
+	logger.Debug("createProduct: call putState, key = ", key)
 	err = stub.PutState(key, bytes)
 	if err != nil {
-		fmt.Println("createProduct: Error invoking on chaincode:", err)
+		logger.Error("createProduct: Error invoking on chaincode:", err)
 		return shim.Error(err.Error())
 	}
 
-	fmt.Println("createProduct: return successful write")
+	logger.Debug("createProduct: return successful write")
 	return shim.Success(bytes)
 
 } // end of createProduct
+
+
+
+// ============================================================================================================================
+// Get Product - get a product asset from ledger
+// ============================================================================================================================
+func getProduct(stub shim.ChaincodeStubInterface, key string) (Product, error) {
+
+	logger.Info("getProduct: enter")
+	defer logger.Info("getProduct: exit")
+
+	var prod Product
+
+	productAsBytes, err := stub.GetState(key)
+	if err != nil { //this seems to always succeed, even if key didn't exist
+		return prod, errors.New("getProduct: Failed to find product - " + key)
+	}
+
+	if len(productAsBytes) == 0 {
+		return prod, errors.New("getProduct: Error processing request, no results found")
+	}
+
+	prod, err = getProductFromJSON(productAsBytes)
+	if err != nil {
+		logger.Error("getProduct: Error with JSON format:", err)
+		return prod, errors.New(err.Error())
+	}
+
+	//test if product is actually here or just nil
+	if len(prod.Gtin) < 1 {
+		return prod, errors.New("getProduct:Product does not exist - " + key)
+	}
+
+	return prod, nil
+}
 
 // Since we have dynamic data we unmarshall into the Data field for everything
 // then manually set the know types from the Data then remove them from Data so
@@ -111,7 +169,7 @@ func (t *DataChainCode) createProduct(stub shim.ChaincodeStubInterface, args []s
 // NOTE: this method just unmashalls and does not validate, so if missing field it return empty string
 func getProductFromJSON(incoming []byte) (Product, error) {
 	var product Product
-	//logger.Info("product in getProductFromJSON", product)
+	logger.Info("product in getProductFromJSON", product)
 	if err := json.Unmarshal([]byte(incoming), &product.Data); err != nil {
 		return product, err
 	}
@@ -213,7 +271,7 @@ func getProductFromJSON(incoming []byte) (Product, error) {
 	} else {
 		product.Receiver = ""
 	}
-	//logger.Info("product in end of getProductFromJSON", product)
+	logger.Info("product in end of getProductFromJSON", product)
 	return product, nil
 
 } // end of getProductFromJSON
@@ -254,3 +312,11 @@ func (product Product) toBytes() ([]byte, error) {
 	return combinedBytes, nil
 
 } // end of toBytes()
+
+func main() {
+	err := shim.Start(new(DataChainCode))
+	if err != nil {
+		logger.Errorf("Error starting Simple chaincode: %s", err)
+	}
+} // end of main()
+
