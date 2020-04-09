@@ -1,4 +1,4 @@
-module github.com/hyperledger/fabric-samples/chaincode/marbles02/go
+module github.com/ajmachado/dataUploadcc
 
 go 1.12
 
