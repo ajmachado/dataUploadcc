@@ -34,7 +34,7 @@ func TestMain(m *testing.M) {
 } // end of TestMain
 
 func Test_Init(t *testing.T) {
-	simpleCC := new(DataChaincode)
+	simpleCC := new(DataChainCode)
 	mockStub := shim.NewMockStub("mockstub", simpleCC)
 	txId := "mockTxID"
 
