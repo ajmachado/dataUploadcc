@@ -122,10 +122,10 @@ func (t *DataChainCode) createProduct(stub shim.ChaincodeStubInterface, args []s
 		logger.Error("createProduct: Error invoking on chaincode:", err)
 		return shim.Error(err.Error())
 	}
-
+	logger.info(stub.GetTxID())
 	logger.Debug("createProduct: return successful write")
-	return shim.Success(bytes)
-
+	//return shim.Success(bytes)
+	return shim.Success(stub.GetTxID())
 } // end of createProduct
 
 
