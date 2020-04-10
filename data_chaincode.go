@@ -15,7 +15,7 @@ type DataChainCode struct {
 
 // Product - product that is written to the ledger,  Data contains non static type files
 type Product struct {
-	ID           int                    `json:"id"`
+	ID           float64                    `json:"id"`
 	Gtin         string                 `json:"gtin"`
 	Lot          string                 `json:"lot"`
 	SerialNumber string                 `json:"serialNo"`
@@ -176,7 +176,7 @@ func getProductFromJSON(incoming []byte) (Product, error) {
 	}
 	
 	if val, ok := product.Data["id"]; ok {
-		product.ID = val.(int)
+		product.ID = val.(float64)
 		delete(product.Data, "id")
 	} else {
 		product.ID = 0
