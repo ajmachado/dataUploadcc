@@ -108,13 +108,12 @@ func (t *DataChainCode) createProduct(stub shim.ChaincodeStubInterface, args []s
 	}
 
 	key := getProductKey(product)
-	logger.Debug("createProduct: key = ", key)
 	bytes, err := product.toBytes()
 	if err != nil {
 		logger.Error("createProduct: Error converting input product to bytes:", err)
 		return shim.Error(err.Error())
 	}
-
+	logger.Info("createProduct: call putState, key = ", key("createProduct: key = ", key)
 	// write it to the ledger
 	logger.Debug("createProduct: call putState, key = ", key)
 	err = stub.PutState(key, bytes)
