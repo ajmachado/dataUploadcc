@@ -188,9 +188,9 @@ func getProductFromJSON(incoming []byte) (Product, error) {
 	} else {
 		product.Gtin = ""
 	}
-	if val, ok := product.Data["serialNumber"]; ok {
+	if val, ok := product.Data["serialNo"]; ok {
 		product.SerialNumber = val.(string)
-		delete(product.Data, "serialNumber")
+		delete(product.Data, "serialNo")
 	} else {
 		product.SerialNumber = ""
 	}
@@ -200,9 +200,9 @@ func getProductFromJSON(incoming []byte) (Product, error) {
 	} else {
 		product.Lot = ""
 	}
-	if val, ok := product.Data["expiryDate"]; ok {
+	if val, ok := product.Data["expirationDate"]; ok {
 		product.ExpiryDate = val.(string)
-		delete(product.Data, "expiryDate")
+		delete(product.Data, "expirationDate")
 	} else {
 		product.ExpiryDate = ""
 	}
