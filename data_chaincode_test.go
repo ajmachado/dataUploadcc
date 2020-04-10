@@ -12,7 +12,7 @@ import (
 const (
 	chainCodeID      = "dataUpload_1"
 	
-	mockDevJson = `{"id":1,"gtin":"08806555018611","lot":"M036191","serialNo":"1936800","expirationDate":"10/10/2026","event":"commission","gln":"0300060000037","status":"active","tradeItemDesc":"gardasil9 10 pack ","product":"gardasil9","tradename":"Gardasil 9","manufactureDate":"10/10/2019","location":"Wilson, NC","toGln":"0300060000037","sender":"manufacturer","receiver":"manufacturer"}`
+	mockDevJson = `{"id":"1","gtin":"08806555018611","lot":"M036191","serialNo":"1936800","expirationDate":"10/10/2026","event":"commission","gln":"0300060000037","status":"active","tradeItemDesc":"gardasil9 10 pack ","product":"gardasil9","tradename":"Gardasil 9","manufactureDate":"10/10/2019","location":"Wilson, NC","toGln":"0300060000037","sender":"manufacturer","receiver":"manufacturer"}`
 	
 )
 
@@ -32,6 +32,20 @@ func TestMain(m *testing.M) {
 	os.Exit(exitCode)
 
 } // end of TestMain
+
+func Test_Init(t *testing.T) {
+	simpleCC := new(DataChaincode)
+	mockStub := shim.NewMockStub("mockstub", simpleCC)
+	txId := "mockTxID"
+
+	mockStub.MockTransactionStart(txId)
+	response := simpleCC.Init(mockStub)
+	mockStub.MockTransactionEnd(txId)
+	if s := response.GetStatus(); s != 200 {
+		fmt.Println("Init test failed")
+		t.FailNow()
+	}
+}
 
 func TestCreateProducts(t *testing.T) {
 	fmt.Println("TestCreateProducts: enter")

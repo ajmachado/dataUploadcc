@@ -15,7 +15,7 @@ type DataChainCode struct {
 
 // Product - product that is written to the ledger,  Data contains non static type files
 type Product struct {
-	ID           int                    `json:"id"`
+	ID           string                    `json:"id"`
 	Gtin         string                 `json:"gtin"`
 	Lot          string                 `json:"lot"`
 	SerialNumber string                 `json:"serialNo"`
@@ -43,7 +43,7 @@ type ProductKey struct {
 	ExpiryDate   string
 }
 
-var logger = shim.NewLogger("merck-digitaltwinpoc-cc")
+var logger = shim.NewLogger("data_chaincode-cc")
 
 // ProductObjectType - defines the project object type
 const ProductObjectType = "product"
@@ -170,15 +170,16 @@ func getProduct(stub shim.ChaincodeStubInterface, key string) (Product, error) {
 func getProductFromJSON(incoming []byte) (Product, error) {
 	var product Product
 	logger.Info("product in getProductFromJSON", product)
+	logger.Info(incoming)
 	if err := json.Unmarshal([]byte(incoming), &product.Data); err != nil {
 		return product, err
 	}
 	
 	if val, ok := product.Data["id"]; ok {
-		product.ID = val.(int)
+		product.ID = val.(string)
 		delete(product.Data, "id")
 	} else {
-		product.ID = 0
+		product.ID = ""
 	}
 
 	if val, ok := product.Data["gtin"]; ok {
