@@ -125,7 +125,7 @@ func (t *DataChainCode) createProduct(stub shim.ChaincodeStubInterface, args []s
 	logger.Info(stub.GetTxID())
 	logger.Debug("createProduct: return successful write")
 	//return shim.Success(bytes)
-	return shim.Success([]byte(stub.GetTxID())
+	return shim.Success([]byte(stub.GetTxID()))
 } // end of createProduct
 
 
