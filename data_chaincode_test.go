@@ -62,7 +62,7 @@ func TestCreateProducts(t *testing.T) {
 	
 } // end of TestCreateProducts
 
-func TestCRUD(t *testing.T) {
+/*func TestCRUD(t *testing.T) {
 	fmt.Println("TestCRUD: enter")
 	//defer logger.Debug("TestCRUD: exit")
 
@@ -76,4 +76,4 @@ func TestCRUD(t *testing.T) {
 	var returnCode = int(results.Status)
 	assert.Equal(t, 200, returnCode, "Result : Success")
 } // end of TestCRUD
-
+*/
