@@ -170,7 +170,7 @@ func getProduct(stub shim.ChaincodeStubInterface, key string) (Product, error) {
 func getProductFromJSON(incoming []byte) (Product, error) {
 	var product Product
 	logger.Info("product in getProductFromJSON", product)
-	logger.Info(incoming)
+	
 	if err := json.Unmarshal([]byte(incoming), &product.Data); err != nil {
 		return product, err
 	}
