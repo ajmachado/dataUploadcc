@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"strings"
+	"strconv"
 	
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
@@ -170,13 +171,13 @@ func getProduct(stub shim.ChaincodeStubInterface, key string) (Product, error) {
 func getProductFromJSON(incoming []byte) (Product, error) {
 	var product Product
 	logger.Info("product in getProductFromJSON", product)
-	
+
 	if err := json.Unmarshal([]byte(incoming), &product.Data); err != nil {
 		return product, err
 	}
 	
 	if val, ok := product.Data["id"]; ok {
-		product.ID = val.(string)
+		product.ID = strconv.Itoa(val)
 		delete(product.Data, "id")
 	} else {
 		product.ID = ""
