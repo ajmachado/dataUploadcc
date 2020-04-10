@@ -113,7 +113,7 @@ func (t *DataChainCode) createProduct(stub shim.ChaincodeStubInterface, args []s
 		logger.Error("createProduct: Error converting input product to bytes:", err)
 		return shim.Error(err.Error())
 	}
-	logger.Info("createProduct: call putState, key = ", key("createProduct: key = ", key)
+	logger.Info("createProduct: call putState, key = ", key)
 	// write it to the ledger
 	logger.Debug("createProduct: call putState, key = ", key)
 	err = stub.PutState(key, bytes)
