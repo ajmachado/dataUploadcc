@@ -4,8 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"strings"
-	"strconv"
-	
+		
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
 )
@@ -180,7 +179,7 @@ func getProductFromJSON(incoming []byte) (Product, error) {
 		product.ID = val.(int)
 		delete(product.Data, "id")
 	} else {
-		product.ID = ""
+		product.ID = 0
 	}
 
 	if val, ok := product.Data["gtin"]; ok {
