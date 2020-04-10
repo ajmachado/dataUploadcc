@@ -1,4 +1,4 @@
-module github.com/ajmachado/dataUploadcc
+module example.com/dataUploadcc
 
 go 1.12
 
