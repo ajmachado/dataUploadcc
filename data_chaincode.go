@@ -46,8 +46,8 @@ type ProductKey struct {
 }
 
 type ReturnVal struct {
-	DataHash      string
-	TransactionId string
+	DataHash      string `json:"dataHash"`
+	TransactionId string `json:"transactionId"`
 }
 
 var logger = shim.NewLogger("data_chaincode-cc")
