@@ -45,7 +45,7 @@ type ProductKey struct {
 }
 
 type ReturnVal struct {
-	DataHash      byte[]
+	DataHash      string
 	TransactionId string
 }
 
@@ -127,7 +127,7 @@ func (t *DataChainCode) createProduct(stub shim.ChaincodeStubInterface, args []s
 	logger.Info("createProduct: return successful write")
 	//logger.Info([]byte(stub.GetTxID()))
 	//return shim.Success(bytes)
-	returnVal := ReturnVal{bytes, stub.GetTxID()}
+	returnVal := ReturnVal{string(bytes), stub.GetTxID()}
 	rv, err := json.Marshal(returnVal)
 	return shim.Success([]byte(rv))
 	//return shim.Success([]byte(stub.GetTxID()))
