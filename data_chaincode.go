@@ -18,7 +18,7 @@ type Product struct {
 	ID           float64                    `json:"id"`
 	Gtin         string                 `json:"gtin"`
 	Lot          string                 `json:"lot"`
-	SerialNumber string                 `json:"serialNo"`
+	SerialNumber float64                 `json:"serialNo"`
 	ExpiryDate   string                 `json:"expirationDate"`
 	Event        string                 `json:"event"`
 	Gln          string                 `json:"gln"`
@@ -31,6 +31,7 @@ type Product struct {
 	ToGln        string                 `json:"toGln"`
 	Sender       string                 `json:"sender"`
 	Receiver     string                 `json:"receiver"`
+	DataHash     string                 `json:"dataHash"`
 	Data         map[string]interface{} `json:"-"` // Unknown fields should go here.
 }
 
@@ -43,6 +44,11 @@ type ProductKey struct {
 	ExpiryDate   string
 }
 
+type ReturnVal struct {
+	DataHash      byte
+	TransactionId string
+}
+
 var logger = shim.NewLogger("data_chaincode-cc")
 
 // ProductObjectType - defines the project object type
@@ -51,9 +57,6 @@ const ProductObjectType = "product"
 // MaxProductJSONSizeAllowed - defines the max JSON size allowed for an input
 const MaxProductJSONSizeAllowed = 2048
 
-// MaxProductItems - defines the max product items that can be returned
-const MaxProductItems = 100
-
 // Init is called with the chaincode is instantiated or updated.
 // It can be used to initialize data for the chaincode for real products or test
 // For this we don't need to pre-populate anything
@@ -61,7 +64,6 @@ func (t *DataChainCode) Init(stub shim.ChaincodeStubInterface) pb.Response {
 	logger.Info("Init: enter")
 	defer logger.Info("Init: exit")
 	return shim.Success(nil)
-
 } // end of init
 
 // Invoke is called per transaction on the chaincode.
@@ -123,9 +125,12 @@ func (t *DataChainCode) createProduct(stub shim.ChaincodeStubInterface, args []s
 	}
 	logger.Info("transaction id", stub.GetTxID())
 	logger.Info("createProduct: return successful write")
-	logger.Info([]byte(stub.GetTxID()))
+	//logger.Info([]byte(stub.GetTxID()))
 	//return shim.Success(bytes)
-	return shim.Success([]byte(stub.GetTxID()))
+	var returnVal := ReturnVal{bytes, stub.GetTxID()}
+	rv, err := json.Marshal(returnVal)
+	return shim.Success([]byte(rv))
+	//return shim.Success([]byte(stub.GetTxID()))
 } // end of createProduct
 
 
@@ -189,7 +194,7 @@ func getProductFromJSON(incoming []byte) (Product, error) {
 		product.Gtin = ""
 	}
 	if val, ok := product.Data["serialNo"]; ok {
-		product.SerialNumber = val.(string)
+		product.SerialNumber = val.(float64)
 		delete(product.Data, "serialNo")
 	} else {
 		product.SerialNumber = ""
