@@ -128,8 +128,8 @@ func (t *DataChainCode) createProduct(stub shim.ChaincodeStubInterface, args []s
 	logger.Info("createProduct: return successful write")
 	//logger.Info([]byte(stub.GetTxID()))
 	//return shim.Success(bytes)
-	pvtDataHash := stub.getPrivateDataHash(product, key)
-	returnVal := ReturnVal{string(pvtDataHash), stub.GetTxID()}
+	//pvtDataHash := stub.getPrivateDataHash(product, key)
+	returnVal := ReturnVal{string(bytes), stub.GetTxID()}
 	logger.Info("return val Before Marshal : ", returnVal)
 	rv, err := json.Marshal(returnVal)
 	logger.Info("return val", rv)
