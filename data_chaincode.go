@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"strings"
+	"fmt"
 		
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
@@ -287,7 +288,7 @@ func getProductKey(product Product) string {
 
 	// create the key from the 4 attributes
 	//key := strings.ToLower(product.Gtin) + strings.ToLower(product.SerialNumber) + strings.ToLower(product.Lot) + product.ExpiryDate
-	key := strings.ToLower(product.Gtin) + string(product.SerialNumber) + strings.ToLower(product.Lot) + product.ExpiryDate
+	key := strings.ToLower(product.Gtin) + fmt.Sprintf("%f", product.SerialNumber) + strings.ToLower(product.Lot) + product.ExpiryDate
 	return key
 
 } // end of getProductKey
