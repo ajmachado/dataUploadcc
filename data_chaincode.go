@@ -130,6 +130,7 @@ func (t *DataChainCode) createProduct(stub shim.ChaincodeStubInterface, args []s
 	//return shim.Success(bytes)
 	returnVal := ReturnVal{string(bytes), stub.GetTxID()}
 	rv, err := json.Marshal(returnVal)
+	logger.Info("return val", rv)
 	return shim.Success([]byte(rv))
 	//return shim.Success([]byte(stub.GetTxID()))
 } // end of createProduct
