@@ -45,7 +45,7 @@ type ProductKey struct {
 }
 
 type ReturnVal struct {
-	DataHash      byte
+	DataHash      byte[]
 	TransactionId string
 }
 
@@ -197,7 +197,7 @@ func getProductFromJSON(incoming []byte) (Product, error) {
 		product.SerialNumber = val.(float64)
 		delete(product.Data, "serialNo")
 	} else {
-		product.SerialNumber = ""
+		product.SerialNumber = 0
 	}
 	if val, ok := product.Data["lot"]; ok {
 		product.Lot = val.(string)
@@ -286,7 +286,8 @@ func getProductFromJSON(incoming []byte) (Product, error) {
 func getProductKey(product Product) string {
 
 	// create the key from the 4 attributes
-	key := strings.ToLower(product.Gtin) + strings.ToLower(product.SerialNumber) + strings.ToLower(product.Lot) + product.ExpiryDate
+	//key := strings.ToLower(product.Gtin) + strings.ToLower(product.SerialNumber) + strings.ToLower(product.Lot) + product.ExpiryDate
+	key := strings.ToLower(product.Gtin) + product.SerialNumber + strings.ToLower(product.Lot) + product.ExpiryDate
 	return key
 
 } // end of getProductKey
