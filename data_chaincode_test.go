@@ -12,7 +12,7 @@ import (
 const (
 	chainCodeID      = "dataUpload_1"
 	
-	mockDevJson = `{"id":1,"gtin":"08806555018611","lot":"M036191","serialNo":1936800,"expirationDate":"10/10/2026","event":"commission","gln":"0300060000037","status":"active","tradeItemDesc":"gardasil9 10 pack ","product":"gardasil9","tradename":"Gardasil 9","manufactureDate":"10/10/2019","location":"Wilson, NC","toGln":"0300060000037","toLocation":"Wilson, NC","loc_cd":"{"lat":35.721268,"lon":-77.915543}","sender":"manufacturer","receiver":"manufacturer","event_dt":"2019-10-12T04:00:00.000Z"}`
+	mockDevJson = `{"id":1,"gtin":"08806555018611","lot":"M036191","serialNo":1936800,"expirationDate":"10/10/2026","event":"commission","gln":"0300060000037","status":"active","tradeItemDesc":"gardasil9 10 pack ","product":"gardasil9","tradename":"Gardasil 9","manufactureDate":"10/10/2019","location":"Wilson, NC","toGln":"0300060000037","toLocation":"Wilson, NC","loc_cd":'{"lat":35.721268,"lon":-77.915543}',"sender":"manufacturer","receiver":"manufacturer","event_dt":"2019-10-12T04:00:00.000Z"}`
 	
 )
 
