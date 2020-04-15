@@ -14,12 +14,18 @@ import (
 type DataChainCode struct {
 }
 
+//Struct for location vals
+type LocationData struct {
+	Latitude  float64 `json:"lat"`
+	Longitude float64 `json:"lon"`
+}
+
 // Product - product that is written to the ledger,  Data contains non static type files
 type Product struct {
-	ID           float64                    `json:"id"`
+	ID           float64                `json:"id"`
 	Gtin         string                 `json:"gtin"`
 	Lot          string                 `json:"lot"`
-	SerialNumber float64                 `json:"serialNo"`
+	SerialNumber float64                `json:"serialNo"`
 	ExpiryDate   string                 `json:"expirationDate"`
 	Event        string                 `json:"event"`
 	Gln          string                 `json:"gln"`
@@ -30,9 +36,11 @@ type Product struct {
 	ManufactureDate string              `json:"manufactureDate"`
 	Location     string                 `json:"location"`
 	ToGln        string                 `json:"toGln"`
+	ToLocation   string                 `json:"toLocation"`
 	Sender       string                 `json:"sender"`
 	Receiver     string                 `json:"receiver"`
-	DataHash     string                 `json:"dataHash"`
+	LocationInfo LocationData           `json:"loc_cd"`
+	EventDate    string                 `json:"event_dt"`
 	Data         map[string]interface{} `json:"-"` // Unknown fields should go here.
 }
 
@@ -126,15 +134,13 @@ func (t *DataChainCode) createProduct(stub shim.ChaincodeStubInterface, args []s
 	}
 	logger.Info("transaction id", stub.GetTxID())
 	logger.Info("createProduct: return successful write")
-	//logger.Info([]byte(stub.GetTxID()))
 	//return shim.Success(bytes)
-	//pvtDataHash := stub.getPrivateDataHash(product, key)
 	returnVal := ReturnVal{string(bytes), stub.GetTxID()}
 	logger.Info("return val Before Marshal : ", returnVal)
 	rv, err := json.Marshal(returnVal)
 	logger.Info("return val", rv)
-	return shim.Success([]byte(rv))
-	//return shim.Success([]byte(stub.GetTxID()))
+	//return shim.Success([]byte(rv))
+	return shim.Success([]byte(stub.GetTxID()))
 } // end of createProduct
 
 
@@ -183,6 +189,17 @@ func getProductFromJSON(incoming []byte) (Product, error) {
 	if err := json.Unmarshal([]byte(incoming), &product.Data); err != nil {
 		return product, err
 	}
+
+	var loc LocationData
+	if val, ok := product.Data["loc_cd"]; ok {
+		if err := json.Unmarshal([]byte(val), &loc); err != nil {
+			return loc, err
+		}
+		product.LocationInfo = loc
+		delete(product.Data, "loc_cd")
+	} else {
+		product.LocationInfo = loc
+	}
 	
 	if val, ok := product.Data["id"]; ok {
 		product.ID = val.(float64)
@@ -220,6 +237,12 @@ func getProductFromJSON(incoming []byte) (Product, error) {
 		delete(product.Data, "event")
 	} else {
 		product.Event = ""
+	}
+	if val, ok := product.Data["event_dt"]; ok {
+		product.EventDate = val.(string)
+		delete(product.Data, "event_dt")
+	} else {
+		product.EventDate = ""
 	}
 	if val, ok := product.Data["gln"]; ok {
 		product.Gln = val.(string)
@@ -268,6 +291,12 @@ func getProductFromJSON(incoming []byte) (Product, error) {
 		delete(product.Data, "toGln")
 	} else {
 		product.ToGln = ""
+	}
+	if val, ok := product.Data["toLocation"]; ok {
+		product.ToLocation = val.(string)
+		delete(product.Data, "toLocation")
+	} else {
+		product.ToLocation = ""
 	}
 	if val, ok := product.Data["sender"]; ok {
 		product.Sender = val.(string)
