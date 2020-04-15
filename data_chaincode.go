@@ -200,7 +200,7 @@ func getProductFromJSON(incoming []byte) (Product, error) {
 	} else {
 		product.LocationInfo = loc
 	}
-	
+	logger.Info("Got Location Data", loc)
 	if val, ok := product.Data["id"]; ok {
 		product.ID = val.(float64)
 		delete(product.Data, "id")
