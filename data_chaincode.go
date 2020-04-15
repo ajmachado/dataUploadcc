@@ -200,10 +200,10 @@ func getProductFromJSON(incoming []byte) (Product, error) {
 			return product, err
 		}
 		if loc_val, ok := temp["lat"]; ok {
-			lat = loc_val.(float64)
+			lat = loc_val
 		}
 		if loc_val, ok := temp["lon"]; ok {
-			lon = loc_val.(float64)
+			lon = loc_val
 		}
 		product.LocationInfo = LocationData{lat, lon}
 		delete(product.Data, "loc_cd")
