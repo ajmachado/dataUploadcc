@@ -189,7 +189,7 @@ func getProductFromJSON(incoming []byte) (Product, error) {
 	if err := json.Unmarshal([]byte(incoming), &product.Data); err != nil {
 		return product, err
 	}
-
+	logger.Info("Got product data")
 	//var loc LocationData
 	var temp map[string]interface{}
 	lat := 0.00
