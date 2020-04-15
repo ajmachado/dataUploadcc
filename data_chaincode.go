@@ -196,6 +196,8 @@ func getProductFromJSON(incoming []byte) (Product, error) {
 	var lon float64
 	if val, ok := product.Data["loc_cd"]; ok {
 		logger.Info("In Location Data", val)
+		temp = val
+		logger.Info("In Location Data temp", temp["lat"])
 		if err := json.Unmarshal(val.([]byte), &temp); err != nil {
 			return product, err
 		}
