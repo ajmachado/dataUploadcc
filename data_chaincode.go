@@ -192,7 +192,7 @@ func getProductFromJSON(incoming []byte) (Product, error) {
 
 	var loc LocationData
 	if val, ok := product.Data["loc_cd"]; ok {
-		if err := json.Unmarshal([]byte(val), &loc); err != nil {
+		if err := json.Unmarshal(val.(*[]byte), &loc); err != nil {
 			return product, err
 		}
 		product.LocationInfo = loc
