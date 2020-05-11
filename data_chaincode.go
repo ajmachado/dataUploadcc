@@ -379,7 +379,7 @@ func (t *DataChainCode) queryProductsByEvent(stub shim.ChaincodeStubInterface, a
 
 	queryResults, err := getQueryResultForQueryString(stub, queryString, args)
 	if err != nil {
-		fmt.Println("queryProductsByGtin:, error getting results = ", err)
+		fmt.Println("queryProductsByEvent:, error getting results = ", err)
 		return shim.Error(err.Error())
 	}
 	return shim.Success(queryResults)

@@ -94,7 +94,7 @@ func TestQueryByEvent(t *testing.T) {
 	// this is not implemented so expect 500
 	results = stub.MockInvoke("TestQueryByEvent", [][]byte{[]byte("queryProductsByEvent"), []byte("commission")})
 	returnCode = int(results.Status)
-	assert.Equal(t, 500, returnCode, "Result : Success, queryProductsByGtin")
+	assert.Equal(t, 500, returnCode, "Result : Success, queryProductsByEvent")
 
 	
 } // end of TestQueryByEvent
