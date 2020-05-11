@@ -6,7 +6,6 @@ import (
 	"errors"
 	"strconv"
 	"strings"
-	"time"
 	"fmt"
 		
 	"github.com/hyperledger/fabric-chaincode-go/shim"
@@ -63,6 +62,9 @@ const ProductObjectType = "product-data"
 
 // MaxProductJSONSizeAllowed - defines the max JSON size allowed for an input
 const MaxProductJSONSizeAllowed = 2048
+
+// MaxProductItems - defines the max product items that can be returned
+const MaxProductItems = 100
 
 // Init is called with the chaincode is instantiated or updated.
 // It can be used to initialize data for the chaincode for real products or test
