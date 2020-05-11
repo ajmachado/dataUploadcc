@@ -23,8 +23,8 @@ func TestMain(m *testing.M) {
 	//logger.SetLevel(shim.LogWarning)
 	// logger.SetLevel(shim.LogDebug)
 
-	//logger.Debug("TestMain: enter")
-	//defer logger.Debug("TestMain: exit")
+	//fmt.Println("TestMain: enter")
+	//defer fmt.Println("TestMain: exit")
 	fmt.Println("TestMain");
 
 	exitCode := m.Run()
@@ -64,7 +64,7 @@ func TestCreateProducts(t *testing.T) {
 
 /*func TestCRUD(t *testing.T) {
 	fmt.Println("TestCRUD: enter")
-	//defer logger.Debug("TestCRUD: exit")
+	//defer fmt.Println("TestCRUD: exit")
 
 	stub := shim.NewMockStub("mockStub", new(DataChainCode))
 
@@ -77,3 +77,24 @@ func TestCreateProducts(t *testing.T) {
 	assert.Equal(t, 200, returnCode, "Result : Success")
 } // end of TestCRUD
 */
+func TestQueryByEvent(t *testing.T) {
+	fmt.Println("TestQueryByEvent: enter")
+	defer fmt.Println("TestQueryByEvent: exit")
+
+	stub := shimtest.NewMockStub("mockStub", new(DataChainCode))
+
+	if stub == nil {
+		t.Fatalf("TestQueryByEvent: MockStub creation failed")
+	}
+
+	results := stub.MockInvoke("TestQueryByEvent", [][]byte{[]byte("createProduct"), []byte(mockDevJson)})
+	var returnCode = int(results.Status)
+	assert.Equal(t, 200, returnCode, "Result : Success, mockProd1GoodCreateJSON")
+
+	// this is not implemented so expect 500
+	results = stub.MockInvoke("TestQueryByEvent", [][]byte{[]byte("queryProductsByEvent"), []byte("commission")})
+	returnCode = int(results.Status)
+	assert.Equal(t, 500, returnCode, "Result : Success, queryProductsByGtin")
+
+	
+} // end of TestQueryByEvent
