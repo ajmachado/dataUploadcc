@@ -1,13 +1,16 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
+	"strconv"
 	"strings"
+	"time"
 	"fmt"
 		
-	"github.com/hyperledger/fabric/core/chaincode/shim"
-	pb "github.com/hyperledger/fabric/protos/peer"
+	"github.com/hyperledger/fabric-chaincode-go/shim"
+	pb "github.com/hyperledger/fabric-protos-go/peer"
 )
 
 // DataChainCode example simple Chaincode implementation
@@ -16,12 +19,13 @@ type DataChainCode struct {
 
 //Struct for location vals
 type LocationData struct {
-	Latitude  float64 `json:"lat"`
+	Latitude  float64 `json:"lat"`	
 	Longitude float64 `json:"lon"`
 }
 
 // Product - product that is written to the ledger,  Data contains non static type files
 type Product struct {
+	DocType      string                 `json:"docType"`
 	ID           float64                `json:"id"`
 	Gtin         string                 `json:"gtin"`
 	Lot          string                 `json:"lot"`
@@ -53,15 +57,9 @@ type ProductKey struct {
 	ExpiryDate   string
 }
 
-type ReturnVal struct {
-	DataHash      string `json:"dataHash"`
-	TransactionId string `json:"transactionId"`
-}
-
-var logger = shim.NewLogger("data_chaincode-cc")
 
 // ProductObjectType - defines the project object type
-const ProductObjectType = "product"
+const ProductObjectType = "product-data"
 
 // MaxProductJSONSizeAllowed - defines the max JSON size allowed for an input
 const MaxProductJSONSizeAllowed = 2048
@@ -70,29 +68,31 @@ const MaxProductJSONSizeAllowed = 2048
 // It can be used to initialize data for the chaincode for real products or test
 // For this we don't need to pre-populate anything
 func (t *DataChainCode) Init(stub shim.ChaincodeStubInterface) pb.Response {
-	logger.Info("Init: enter")
-	defer logger.Info("Init: exit")
+	fmt.Println("Init: enter")
+	defer fmt.Println("Init: exit")
 	return shim.Success(nil)
 } // end of init
 
 // Invoke is called per transaction on the chaincode.
 func (t *DataChainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
-	logger.Info("Invoke: enter")
-	defer logger.Info("Invoke: exit")
+	fmt.Println("Invoke: enter")
+	defer fmt.Println("Invoke: exit")
 
 	function, args := stub.GetFunctionAndParameters()
 	txID := stub.GetTxID()
 
-	logger.Debug("Invoke: Transaction ID: ", txID)
-	logger.Debug("Invoke: function: ", function)
-	logger.Debug("Invoke: args count: ", len(args))
-	logger.Debug("Invoke: args found: ", args)
+	fmt.Println("Invoke: Transaction ID: ", txID)
+	fmt.Println("Invoke: function: ", function)
+	fmt.Println("Invoke: args count: ", len(args))
+	fmt.Println("Invoke: args found: ", args)
 
 	if function == "createProduct" {
 		return t.createProduct(stub, args)
-	} 
+	} else if function == "queryProductsByEvent" {
+		return t.queryProductsByEvent(stub, args)
+	}
 
-	logger.Error("Invoke: Invalid function = " + function)
+	fmt.Println("Invoke: Invalid function = " + function)
 	return shim.Error("Invoke: Invalid function = " + function)
 
 } // end of invoke
@@ -102,44 +102,38 @@ func (t *DataChainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 // ============================================================================================================================
 // takes a single argument that is JSON of the product to create
 func (t *DataChainCode) createProduct(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	logger.Info("createProduct: enter")
-	defer logger.Info("createProduct: exit")
+	fmt.Println("createProduct: enter")
+	defer fmt.Println("createProduct: exit")
 
 	if len(args) != 1 {
 		errorString := "createProduct: Invalid number of args, must be exactly 1 argument containing JSON containing data"
-		logger.Error(errorString)
+		fmt.Println(errorString)
 		return shim.Error(errorString)
 	}
 
 	var productInput = args[0]
 	product, err := getProductFromJSON([]byte(productInput))
 	if err != nil {
-		logger.Error("createProduct: Error with JSON format:", err)
+		fmt.Println("createProduct: Error with JSON format:", err)
 		return shim.Error(err.Error())
 	}
 
 	key := getProductKey(product)
 	bytes, err := product.toBytes()
 	if err != nil {
-		logger.Error("createProduct: Error converting input product to bytes:", err)
+		fmt.Println("createProduct: Error converting input product to bytes:", err)
 		return shim.Error(err.Error())
 	}
-	logger.Info("createProduct: call putState, key = ", key)
 	// write it to the ledger
-	logger.Debug("createProduct: call putState, key = ", key)
+	fmt.Println("createProduct: call putState, key = ", key)
 	err = stub.PutState(key, bytes)
 	if err != nil {
-		logger.Error("createProduct: Error invoking on chaincode:", err)
+		fmt.Println("createProduct: Error invoking on chaincode:", err)
 		return shim.Error(err.Error())
 	}
-	logger.Info("transaction id", stub.GetTxID())
-	logger.Info("createProduct: return successful write")
+	fmt.Println("transaction id", stub.GetTxID())
+	fmt.Println("createProduct: return successful write")
 	//return shim.Success(bytes)
-	returnVal := ReturnVal{string(bytes), stub.GetTxID()}
-	logger.Info("return val Before Marshal : ", returnVal)
-	rv, err := json.Marshal(returnVal)
-	logger.Info("return val", rv)
-	//return shim.Success([]byte(rv))
 	return shim.Success([]byte(stub.GetTxID()))
 } // end of createProduct
 
@@ -150,8 +144,8 @@ func (t *DataChainCode) createProduct(stub shim.ChaincodeStubInterface, args []s
 // ============================================================================================================================
 func getProduct(stub shim.ChaincodeStubInterface, key string) (Product, error) {
 
-	logger.Info("getProduct: enter")
-	defer logger.Info("getProduct: exit")
+	fmt.Println("getProduct: enter")
+	defer fmt.Println("getProduct: exit")
 
 	var prod Product
 
@@ -166,7 +160,7 @@ func getProduct(stub shim.ChaincodeStubInterface, key string) (Product, error) {
 
 	prod, err = getProductFromJSON(productAsBytes)
 	if err != nil {
-		logger.Error("getProduct: Error with JSON format:", err)
+		fmt.Println("getProduct: Error with JSON format:", err)
 		return prod, errors.New(err.Error())
 	}
 
@@ -184,10 +178,15 @@ func getProduct(stub shim.ChaincodeStubInterface, key string) (Product, error) {
 // NOTE: this method just unmashalls and does not validate, so if missing field it return empty string
 func getProductFromJSON(incoming []byte) (Product, error) {
 	var product Product
-	logger.Info("product in getProductFromJSON", product)
+	fmt.Println("product in getProductFromJSON", product)
 
 	if err := json.Unmarshal([]byte(incoming), &product.Data); err != nil {
 		return product, err
+	}
+
+	product.DocType = ProductObjectType
+	if _, ok := product.Data["docType"]; ok {
+		delete(product.Data, "docType")
 	}
 	
 	var temp map[string]interface{}
@@ -202,7 +201,7 @@ func getProductFromJSON(incoming []byte) (Product, error) {
 	} else {
 		product.LocationInfo = LocationData{lat, lon}
 	}
-	//logger.Info("Got Location Data", product.LocationInfo)
+	//fmt.Println("Got Location Data", product.LocationInfo)
 	if val, ok := product.Data["id"]; ok {
 		product.ID = val.(float64)
 		delete(product.Data, "id")
@@ -312,7 +311,7 @@ func getProductFromJSON(incoming []byte) (Product, error) {
 	} else {
 		product.Receiver = ""
 	}
-	logger.Info("product in end of getProductFromJSON", product)
+	fmt.Println("product in end of getProductFromJSON", product)
 	return product, nil
 
 } // end of getProductFromJSON
@@ -355,10 +354,191 @@ func (product Product) toBytes() ([]byte, error) {
 
 } // end of toBytes()
 
+// ===== Example: Parameterized rich query =================================================
+// queryProductsByGtin queries for products based on a passed in gtin.
+// This is an example of a parameterized query where the query logic is baked into the chaincode,
+// and accepting a single query parameter (gtin).
+// Only available on state databases that support rich query (e.g. CouchDB)
+// =========================================================================================
+func (t *DataChainCode) queryProductsByEvent(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+
+	fmt.Println("queryProductsByEvent: enter")
+	defer fmt.Println("queryProductsByEvent: exit")
+
+	if len(args) < 1 {
+		fmt.Println("queryProductsByGtin: Incorrect number of arguments. Expecting 1, that is an event")
+		return shim.Error("queryProductsByEvent: Incorrect number of arguments. Expecting 1, that is an event")
+	}
+
+	event := args[0]
+	fmt.Println("queryProductsByEvent: passed in event = ", event)
+
+	queryString := fmt.Sprintf("{\"selector\":{\"docType\":\"product-data\",\"event\":\"%s\"},\"use_index\":[\"_design/eventIndexDoc\",\"eventIndex\"]}", event)
+
+	queryResults, err := getQueryResultForQueryString(stub, queryString, args)
+	if err != nil {
+		fmt.Println("queryProductsByGtin:, error getting results = ", err)
+		return shim.Error(err.Error())
+	}
+	return shim.Success(queryResults)
+
+} // end of queryProductsByGtin
+
+
+// =========================================================================================
+// getQueryResultForQueryString executes the passed in query string.
+// Result set is built and returned as a byte array containing the JSON results.
+// =========================================================================================
+func getQueryResultForQueryString(stub shim.ChaincodeStubInterface, queryString string, args []string) ([]byte, error) {
+	fmt.Println("getQueryResultForQueryString: enter")
+	defer fmt.Println("getQueryResultForQueryString: exit")
+
+	fmt.Println("getQueryResultForQueryString:  queryString:\n", queryString)
+
+	// process additional query parameters such as offset and maxitems
+	offset := 1
+	maxitems := MaxProductItems
+
+	if len(args) > 1 {
+		var errString string
+		fmt.Println("get arg1,  arg1 = ", args[1])
+		arg1 := args[1]
+		i, err := strconv.Atoi(arg1)
+		if err != nil {
+			errString = "getQueryResultForQueryString:, error passing parameter must be an integer, offset / arg1 = " + arg1 + ", err = " + err.Error()
+			fmt.Println(errString)
+			return nil, errors.New(errString)
+		}
+		offset = i
+		if offset < 1 {
+			errString = "getQueryResultForQueryString:, offset is 1 based and must be >= 1"
+			fmt.Println(errString)
+			return nil, errors.New(errString)
+		}
+		if len(args) > 2 {
+			arg2 := args[2]
+			i, err = strconv.Atoi(arg2)
+			if err != nil {
+				errString = "getQueryResultForQueryString:, error passing parameter must be an integer, maxitems / arg2 = " + arg2 + ", err = " + err.Error()
+				fmt.Println(errString)
+				return nil, errors.New(errString)
+			}
+			maxitems = i
+			if maxitems > MaxProductItems {
+				errString := "getQueryResultForQueryString: maxitems can not exceed " + strconv.Itoa(MaxProductItems)
+				fmt.Println(errString)
+				return nil, errors.New(errString)
+			}
+			if maxitems < 1 {
+				errString = "getQueryResultForQueryString:, maxitems must be >= 1"
+				fmt.Println(errString)
+				return nil, errors.New(errString)
+			}
+		}
+
+	}
+	fmt.Println("getQueryResultForQueryString: offset = ", offset)
+	fmt.Println("getQueryResultForQueryString: maxitems = ", maxitems)
+
+	resultsIterator, err := stub.GetQueryResult(queryString)
+	if err != nil {
+		return nil, err
+	}
+	defer resultsIterator.Close()
+
+	// buffer is a JSON array containing QueryRecords
+	var buffer bytes.Buffer
+	buffer.WriteString("{\"products-data\": [")
+	totalCount := 0
+	itemsSkipped := 0
+	itemsKept := 0
+	bArrayMemberAlreadyWritten := false
+	preLoopLen := offset - 1
+
+	// execute the loop up to the offset
+	for idx := 0; idx < preLoopLen && resultsIterator.HasNext(); idx++ {
+		totalCount++
+		itemsSkipped++
+		_, err := resultsIterator.Next()
+		if err != nil {
+			return nil, errors.New(err.Error())
+		}
+	}
+
+	for idx := 0; resultsIterator.HasNext(); idx++ {
+		totalCount++
+		queryResponse, err := resultsIterator.Next()
+		if err != nil {
+			return nil, errors.New(err.Error())
+		}
+
+		if idx < maxitems {
+			itemsKept++
+
+			if bArrayMemberAlreadyWritten == true {
+				buffer.WriteString(",")
+			}
+			buffer.WriteString("{\"Key\":")
+			buffer.WriteString("\"")
+			buffer.WriteString(queryResponse.Key)
+			buffer.WriteString("\"")
+
+			buffer.WriteString(", \"Record\":")
+			// Record is a JSON object, so we write as-is
+			buffer.WriteString(string(queryResponse.Value))
+			buffer.WriteString("}")
+			bArrayMemberAlreadyWritten = true
+			skipString := "idx = " + strconv.Itoa(idx) + ", offset = " + strconv.Itoa(offset) + ", maxiteams = " + strconv.Itoa(maxitems) + "  -- added"
+			fmt.Println(skipString)
+			fmt.Println("Items added = ", idx)
+
+		} else {
+			itemsSkipped++
+			skipString := "idx = " + strconv.Itoa(idx) + ", offset = " + strconv.Itoa(offset) + ", maxiteams = " + strconv.Itoa(maxitems) + ", items skipped = " + strconv.Itoa(itemsSkipped) + "  -- ignoring"
+			fmt.Println(skipString)
+
+		}
+	}
+	buffer.WriteString("], ")
+
+	// Add the totalCount and items skipped to returned JSON
+	buffer.WriteString("\"totalCount\":")
+	buffer.WriteString("\"")
+	buffer.WriteString(strconv.Itoa(totalCount))
+	buffer.WriteString("\"")
+
+	buffer.WriteString(",\"offset\":")
+	buffer.WriteString("\"")
+	buffer.WriteString(strconv.Itoa(offset))
+	buffer.WriteString("\"")
+
+	buffer.WriteString(",\"maxitems\":")
+	buffer.WriteString("\"")
+	buffer.WriteString(strconv.Itoa(maxitems))
+	buffer.WriteString("\"")
+
+	buffer.WriteString(",\"itemsSkipped\":")
+	buffer.WriteString("\"")
+	buffer.WriteString(strconv.Itoa(itemsSkipped))
+	buffer.WriteString("\"")
+
+	buffer.WriteString(",\"itemsKept\":")
+	buffer.WriteString("\"")
+	buffer.WriteString(strconv.Itoa(itemsKept))
+	buffer.WriteString("\"")
+
+	buffer.WriteString("}")
+
+	fmt.Println("getQueryResultForQueryString: results found\n", buffer.String())
+
+	return buffer.Bytes(), nil
+
+} // end of getQueryResultForQueryString
+
 func main() {
 	err := shim.Start(new(DataChainCode))
 	if err != nil {
-		logger.Errorf("Error starting Simple chaincode: %s", err)
+		fmt.Printlnf("Error starting Simple chaincode: %s", err)
 	}
 } // end of main()
 

@@ -1,0 +1,9 @@
+{
+  "index":{
+      "fields":["lotNumber"]
+  },
+  "ddoc":"lotNumberIndexDoc",
+  "name":"lotNumberIndex",
+  "type":"json"
+}
+
