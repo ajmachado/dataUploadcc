@@ -538,7 +538,7 @@ func getQueryResultForQueryString(stub shim.ChaincodeStubInterface, queryString 
 func main() {
 	err := shim.Start(new(DataChainCode))
 	if err != nil {
-		fmt.Printlnf("Error starting Simple chaincode: %s", err)
+		fmt.Println("Error starting Simple chaincode: %s", err)
 	}
 } // end of main()
 
