@@ -5,7 +5,7 @@ import (
 	"testing"
 	"fmt"
 
-	"github.com/hyperledger/fabric-chaincode-go/shim"
+	"github.com/hyperledger/fabric-chaincode-go/shimtest"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -35,7 +35,7 @@ func TestMain(m *testing.M) {
 
 func Test_Init(t *testing.T) {
 	simpleCC := new(DataChainCode)
-	mockStub := shim.NewMockStub("mockstub", simpleCC)
+	mockStub := shimtest.NewMockStub("mockstub", simpleCC)
 	txId := "mockTxID"
 
 	mockStub.MockTransactionStart(txId)
@@ -50,7 +50,7 @@ func Test_Init(t *testing.T) {
 func TestCreateProducts(t *testing.T) {
 	fmt.Println("TestCreateProducts: enter")
 	
-	stub := shim.NewMockStub("mockStub", new(DataChainCode))
+	stub := shimtest.NewMockStub("mockStub", new(DataChainCode))
 
 	if stub == nil {
 		t.Fatalf("MockStub creation failed")
