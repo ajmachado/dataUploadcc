@@ -375,7 +375,7 @@ func (t *DataChainCode) queryProductsByEvent(stub shim.ChaincodeStubInterface, a
 	event := args[0]
 	fmt.Println("queryProductsByEvent: passed in event = ", event)
 
-	queryString := fmt.Sprintf("{\"selector\":{\"docType\":\"product-data\",\"event\":\"%s\"},\"use_index\":[\"_design/eventIndexDoc\",\"eventIndex\"]}", event)
+	queryString := fmt.Sprintf("{\"selector\":{\"docType\":\"product-data\",\"event\":\"%s\"},\"use_index\":[\"_design/data_eventIndexDoc\",\"data_eventIndex\"]}", event)
 
 	queryResults, err := getQueryResultForQueryString(stub, queryString, args)
 	if err != nil {
