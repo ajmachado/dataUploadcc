@@ -444,6 +444,7 @@ func getQueryResultForQueryString(stub shim.ChaincodeStubInterface, queryString 
 
 	resultsIterator, err := stub.GetQueryResult(queryString)
 	if err != nil {
+		fmt.Println(err)
 		return nil, err
 	}
 	defer resultsIterator.Close()
