@@ -2,8 +2,8 @@
   "index":{
       "fields":["event"]
   },
-  "ddoc":"eventIndexDoc",
-  "name":"eventIndex",
+  "ddoc":"data_eventIndexDoc",
+  "name":"data_eventIndex",
   "type":"json"
 }
 
