@@ -541,7 +541,7 @@ func getQueryResultForQueryString(stub shim.ChaincodeStubInterface, queryString 
 
 } // end of getQueryResultForQueryString
 
-func (t *SmartContract) getProductHistory(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
+func (t *SmartContract) queryProductHistory(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
 
     if len(args) < 1 {
             return shim.Error("Incorrect number of arguments. Expecting 1")
