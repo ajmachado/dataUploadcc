@@ -541,14 +541,14 @@ func getQueryResultForQueryString(stub shim.ChaincodeStubInterface, queryString 
 
 } // end of getQueryResultForQueryString
 
-func (t *SmartContract) queryProductHistory(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
+func (t *DataChainCode) queryProductHistory(stub shim.ChaincodeStubInterface, args []string) sc.Response {
 
     if len(args) < 1 {
             return shim.Error("Incorrect number of arguments. Expecting 1")
     }
 
     productKey := args[0]
-    resultsIterator, err := APIstub.GetHistoryForKey(productKey)
+    resultsIterator, err := stub.GetHistoryForKey(productKey)
     if err != nil {
             return shim.Error(err.Error())
     }
