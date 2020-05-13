@@ -92,6 +92,8 @@ func (t *DataChainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 		return t.createProduct(stub, args)
 	} else if function == "queryProductsByEvent" {
 		return t.queryProductsByEvent(stub, args)
+	} else if function == "queryProductHistory" {
+		return t.queryProductHistory(stub, args)
 	}
 
 	fmt.Println("Invoke: Invalid function = " + function)
@@ -323,7 +325,9 @@ func getProductKey(product Product) string {
 
 	// create the key from the 4 attributes
 	//key := strings.ToLower(product.Gtin) + strings.ToLower(product.SerialNumber) + strings.ToLower(product.Lot) + product.ExpiryDate
-	key := strings.ToLower(product.Gtin) + fmt.Sprintf("%f", product.SerialNumber) + strings.ToLower(product.Lot) + product.ExpiryDate
+	sn := int(product.SerialNumber)
+	key := strings.ToLower(product.Gtin) + strconv.Atoi(sn) + strings.ToLower(product.Lot) + product.ExpiryDate
+	//key := strings.ToLower(product.Gtin) + fmt.Sprintf("%f", product.SerialNumber) + strings.ToLower(product.Lot) + product.ExpiryDate
 	return key
 
 } // end of getProductKey
@@ -383,7 +387,6 @@ func (t *DataChainCode) queryProductsByEvent(stub shim.ChaincodeStubInterface, a
 		return shim.Error(err.Error())
 	}
 	return shim.Success(queryResults)
-
 } // end of queryProductsByGtin
 
 
@@ -537,6 +540,67 @@ func getQueryResultForQueryString(stub shim.ChaincodeStubInterface, queryString 
 	return buffer.Bytes(), nil
 
 } // end of getQueryResultForQueryString
+
+func (t *SmartContract) getProductHistory(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
+
+    if len(args) < 1 {
+            return shim.Error("Incorrect number of arguments. Expecting 1")
+    }
+
+    productKey := args[0]
+    resultsIterator, err := APIstub.GetHistoryForKey(productKey)
+    if err != nil {
+            return shim.Error(err.Error())
+    }
+    defer resultsIterator.Close()
+
+    var buffer bytes.Buffer
+    buffer.WriteString("[")
+
+    bArrayMemberAlreadyWritten := false
+    for resultsIterator.HasNext() {
+            response, err := resultsIterator.Next()
+            if err != nil {
+                    return shim.Error(err.Error())
+            }
+            // Add a comma before array members, suppress it for the first array member
+            if bArrayMemberAlreadyWritten == true {
+                    buffer.WriteString(",")
+            }
+            buffer.WriteString("{\"TxId\":")
+            buffer.WriteString("\"")
+            buffer.WriteString(response.TxId)
+            buffer.WriteString("\"")
+
+            buffer.WriteString(", \"Value\":")
+            // if it was a delete operation on given key, then we need to set the
+            //corresponding value null. Else, we will write the response.Value
+            //as-is (as the Value itself a JSON)
+            if response.IsDelete {
+                    buffer.WriteString("null")
+            } else {
+                    buffer.WriteString(string(response.Value))
+            }
+
+            buffer.WriteString(", \"Timestamp\":")
+            buffer.WriteString("\"")
+            buffer.WriteString(time.Unix(response.Timestamp.Seconds, int64(response.Timestamp.Nanos)).String())
+            buffer.WriteString("\"")
+
+            buffer.WriteString(", \"IsDelete\":")
+            buffer.WriteString("\"")
+            buffer.WriteString(strconv.FormatBool(response.IsDelete))
+            buffer.WriteString("\"")
+
+            buffer.WriteString("}")
+            bArrayMemberAlreadyWritten = true
+    }
+    buffer.WriteString("]")
+
+    fmt.Printf("- History returning:\n%s\n", buffer.String())
+    return shim.Success(buffer.Bytes())
+}
+
 
 func main() {
 	err := shim.Start(new(DataChainCode))
