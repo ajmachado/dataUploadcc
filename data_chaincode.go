@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"fmt"
+	"time"
 		
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	pb "github.com/hyperledger/fabric-protos-go/peer"
@@ -326,7 +327,7 @@ func getProductKey(product Product) string {
 	// create the key from the 4 attributes
 	//key := strings.ToLower(product.Gtin) + strings.ToLower(product.SerialNumber) + strings.ToLower(product.Lot) + product.ExpiryDate
 	sn := int(product.SerialNumber)
-	key := strings.ToLower(product.Gtin) + strconv.Atoi(sn) + strings.ToLower(product.Lot) + product.ExpiryDate
+	key := strings.ToLower(product.Gtin) + strconv.Itoa(sn) + strings.ToLower(product.Lot) + product.ExpiryDate
 	//key := strings.ToLower(product.Gtin) + fmt.Sprintf("%f", product.SerialNumber) + strings.ToLower(product.Lot) + product.ExpiryDate
 	return key
 
@@ -541,7 +542,7 @@ func getQueryResultForQueryString(stub shim.ChaincodeStubInterface, queryString 
 
 } // end of getQueryResultForQueryString
 
-func (t *DataChainCode) queryProductHistory(stub shim.ChaincodeStubInterface, args []string) sc.Response {
+func (t *DataChainCode) queryProductHistory(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
     if len(args) < 1 {
             return shim.Error("Incorrect number of arguments. Expecting 1")
